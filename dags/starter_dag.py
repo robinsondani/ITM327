@@ -8,8 +8,21 @@ from datetime import datetime, timedelta, timezone
 import requests
 import pandas as pd # Import pandas for DataFrame operations
 from snowflake.connector.pandas_tools import write_pandas
+try:
+    from airflow.decorators import dag, task
+except Exception:  # pragma: no cover - fallback for editors/static analysis
+    # Provide lightweight fallback decorators for environments where Airflow
+    # isn't available (e.g., editor linting). These no-op decorators allow
+    # static analysis and tests to import this module without Airflow.
+    def dag(*dargs, **dkwargs):
+        def _decorator(func):
+            return func
+        return _decorator
 
-from airflow.sdk import dag, task
+    def task(*targs, **tkwargs):
+        def _decorator(func):
+            return func
+        return _decorator
 
 # Import utility functions from utils.py (need to ensure it's on the path if not already)
 # This project's setup seems to handle dags/utils.py imports automatically for DAGs.
@@ -18,10 +31,10 @@ from utils import get_snowflake_connection
 # -------------------------------------------------------------------
 # Configuration
 # -------------------------------------------------------------------
-ON_OFF_SNOWFLAKE_LOAD_ENABLED = False  # Set to True to enable Snowflake loading
+ON_OFF_SNOWFLAKE_LOAD_ENABLED = True  # Set to True to enable Snowflake loading
 SNOWFLAKE_DATABASE = os.getenv("SNOWFLAKE_DATABASE", "SNOWBEARAIR_DB") # Default to SNOWBEARAIR_DB
 SNOWFLAKE_SCHEMA = os.getenv("SNOWFLAKE_SCHEMA", "RAW") # Default to RAW
-SNOWFLAKE_TABLE = "BORED_API_ACTIVITIES" # Table name for Bored API data
+SNOWFLAKE_TABLE = "STARTER_DAG_ROBINSON_D" # Table name for Bored API data
 
 @dag(
     dag_id="starter_dag",
@@ -140,15 +153,15 @@ def starter_dag_elt():
             # Example DDL for your Snowflake table (run this manually in Snowflake once):
             #
             # CREATE TABLE IF NOT EXISTS SNOWBEARAIR_DB.RAW.STARTER_DAG_LASTNAME_FI (
-            #     ACTIVITY_IDEA VARCHAR,
-            #     CATEGORY VARCHAR,
-            #     PARTICIPANTS_NEEDED NUMBER(38,0),
-            #     PRICE FLOAT,
-            #     LINK VARCHAR,
-            #     ACCESSIBILITY FLOAT,
-            #     UNIQUE_KEY VARCHAR,
-            #     FETCH_DATE TIMESTAMP_NTZ
-            # );
+            #    ACTIVITY_IDEA VARCHAR,
+            #    CATEGORY VARCHAR,
+            #    PARTICIPANTS_NEEDED NUMBER(38,0),
+            #    PRICE FLOAT,
+            #    LINK VARCHAR,
+            #    ACCESSIBILITY FLOAT,
+            #    UNIQUE_KEY VARCHAR,
+            #    FETCH_DATE TIMESTAMP_NTZ
+            #);
             #
             # Adjust data types as needed based on your specific requirements.
 
